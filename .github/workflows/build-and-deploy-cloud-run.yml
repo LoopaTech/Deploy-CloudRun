@@ -65,6 +65,27 @@ jobs:
           export CLOUDBUILD_FILE="${{ inputs.cloudbuild_file }}"
           export IMAGE_TAG=${{ inputs.image_tag }}
           envsubst < $CLOUDBUILD_FILE > cloudbuild_deployed.yaml
+
+          echo "=== Bucket metadata test ==="
+          gcloud storage buckets describe gs://loopa-platform_cloudbuild
+          
+          echo "=== Bucket write test ==="
+          echo "GitHub Actions permission probe" > /tmp/cloudbuild-permission-probe.txt
+          
+          gcloud storage cp \
+            /tmp/cloudbuild-permission-probe.txt \
+            "gs://loopa-platform_cloudbuild/permission-probes/${GITHUB_RUN_ID}.txt"
+          
+          gcloud storage rm \
+            "gs://loopa-platform_cloudbuild/permission-probes/${GITHUB_RUN_ID}.txt"
+          
+          echo "=== Cloud Build API test ==="
+          gcloud builds list \
+            --project=loopa-platform \
+            --limit=1
+          
+          echo "=== Starting build ==="
+          
           gcloud builds submit --quiet --config cloudbuild_deployed.yaml
 
       - name: Deploy to Cloud Run
