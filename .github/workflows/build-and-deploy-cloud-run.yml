@@ -51,6 +51,17 @@ jobs:
 
       - name: Build and Push Docker image
         run: |-
+          echo "Credential client:"
+          jq -r '.client_email' "$GOOGLE_APPLICATION_CREDENTIALS"
+
+          echo "Active gcloud account:"
+          gcloud auth list \
+            --filter="status:ACTIVE" \
+            --format="value(account)"
+        
+          echo "Active project:"
+          gcloud config get-value project
+                
           export CLOUDBUILD_FILE="${{ inputs.cloudbuild_file }}"
           export IMAGE_TAG=${{ inputs.image_tag }}
           envsubst < $CLOUDBUILD_FILE > cloudbuild_deployed.yaml
